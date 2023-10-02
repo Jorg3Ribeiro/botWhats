@@ -1,24 +1,24 @@
 """
-The API for handling messaging.
+A API para lidar com mensagens.
 
-It has only three endpoints:
+Possui apenas três pontos finais:
 
     /
-    - GET: tells that the server is up and running
+    - GET: informa que o servidor está instalado e funcionando
 
     /send
-    - POST: Sends a message to a user.
-        - Takes a JSON body with the following fields:
-            - chat_id: The ID of the user to send the message to.
-            - message: The message to send.
-        - Returns a JSON body with the following fields:
-            - success: Whether the message was sent successfully.
+    - POST: Envia uma mensagem para um usuário.
+        - Leva um corpo JSON com os seguintes campos:
+            - chat_id: O ID do usuário para o qual enviar a mensagem.
+            - mensagem: A mensagem a ser enviada.
+        - Retorna um corpo JSON com os seguintes campos:
+            - sucesso: Se a mensagem foi enviada com sucesso.
 
     /message
-    - POST: Receives a message from a user, handles it and deliver a reply.
-        - Takes a JSON body with the format as defined in the Message class.
-        - Returns a JSON body with the following fields:
-            - text: The text to send back to the user.
+    - POST: Recebe uma mensagem de um usuário, trata-a e entrega uma resposta.
+        - Leva um corpo JSON com o formato definido na classe Message.
+        - Retorna um corpo JSON com os seguintes campos:
+            - text: O texto a ser enviado de volta ao usuário.
 """
 
 from flask import Flask, request
@@ -34,51 +34,41 @@ app = Flask(__name__)
 
 @app.route("/")
 def it_works():
-    """
-    Tells that the server is up and running.
-    """
-    return "It works!"
+    return "Esta Funcionando!"
 
 
 @app.route("/send", methods=["POST"])
 def send_message():
-    """
-    Sends a message to a user.
-    """
-    # Get the request body.
+
     body = request.get_json()
 
-    # Get the user ID and message from the request body.
     try:
         chat_id = get_key(body, "chat_id")
         message = get_key(body, "message")
     except KeyError:
-        return "Body must be a JSON with the following fields: chat_id, message", 400
+        return "O corpo deve ser um JSON com os seguintes campos: chat_id, mensagem", 400
 
-    # Build a POST request to SEND_MESSAGE_URL
-    # with the user ID and message as parameters.
     response = requests.post(
         SEND_MESSAGE_URL,
         json={"to": chat_id, "text": message}
     )
 
-    # Handle the response.
     if response.status_code == 200:
         return {"success": True}
-    return {"success": False}
+    return {"error": False}
 
 
 @app.route("/message", methods=["POST"])
 def handle_message():
     """
-    Receives a message from a user, handles it and deliver a reply.
+    Recebe uma mensagem de um usuário, trata-a e entrega uma resposta.
     """
-    # Parses the message, which is the request body.
+    # Analisa a mensagem, que é o corpo da solicitação.
     body = request.get_json()
     message = Message(body)
 
-    # Handle the message.
+    # Lidando com a mensagem.
     text = handle(message)
 
-    # Return the response.
+    # Devolvendo a resposta.
     return {"text": text}

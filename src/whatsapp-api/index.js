@@ -1,22 +1,17 @@
-//
-// Imports
 const { Client, LocalAuth, WAState } = require("whatsapp-web.js");
 const express = require("express");
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
 const qrcode = require("qrcode-terminal");
 const winston = require("winston");
 
-//
-// Parameters and configuration
-// - Logging level
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+
 const LOG_LEVEL = process.env.LOG_LEVEL || "info";
-// - URL of the message handler API.
 const MESSAGE_HANDLER_URL =
   process.env.MESSAGE_HANDLE_URL || "http://handler-api/message";
 
-//
-// Setting up the logger
+
 const logger = winston.createLogger({
   level: LOG_LEVEL,
   format: winston.format.json(),
@@ -28,8 +23,6 @@ const logger = winston.createLogger({
   ]
 });
 
-//
-// Function for handling HTTP errors
 function handleErrors(response) {
   if (!response.ok) {
     throw Error(response.statusText);
@@ -37,9 +30,7 @@ function handleErrors(response) {
   return response;
 }
 
-//
-// Construct the WhatsApp Client
-// and set callback functions
+
 const client = new Client({
   authStrategy: new LocalAuth({
     dataPath: "./home/whatsapp-data"
@@ -48,23 +39,24 @@ const client = new Client({
 
 client.initialize();
 
-// - Set the callback for QR code scanning.
 client.on("qr", qr => {
-  logger.debug("QR code received");
-  qrcode.generate(qr, { small: true }); // Generate QR code and display it.
+  logger.debug("QR code gerado");
+  console.log("QR code gerado");
+  qrcode.generate(qr, { small: true });
 });
 
-// - Set the callback for successful login.
 client.on("ready", () => {
-  logger.info("WhatsApp client is ready."); // Log the event.
+  logger.info("WhatsApp client Esta pronto.");
+  console.log("WhatsApp client Esta pronto.");
 });
 
-// - Set the callback for receiving messages.
+// - Defina o retorno de chamada para receber mensagens.
 client.on("message", message => {
-  // Makes a POST request to the message handler API.
-  // The message handler API is responsible for
-  // handling the message and returning a response.
-  logger.debug("Received message:", message);
+  // Faz uma solicitação POST para a API do manipulador de mensagens.
+  // A API do manipulador de mensagens é responsável por
+  // tratar a mensagem e retornando uma resposta.
+  logger.debug("Mensagem recebida:", message);
+
   const options = {
     method: "POST",
     headers: {
@@ -72,63 +64,61 @@ client.on("message", message => {
     },
     body: JSON.stringify(message)
   };
-  logger.debug("Posting message to " + MESSAGE_HANDLER_URL);
+
+  logger.debug("Postando mensagem para " + MESSAGE_HANDLER_URL);
   fetch(MESSAGE_HANDLER_URL, options)
     .then(handleErrors)
     .then(response => response.json())
     .then(response => {
-      // Check if there's text to send back.
+      // Verifique se há texto para enviar de volta.
       if (response.text) {
-        // Send the response back to the sender.
+        // Envie a resposta de volta ao remetente.
         logger.debug(
-          'Sending response "' + response.text + '" to ' + message.from
+          'Enviando resposta "' + response.text + '" para ' + message.from
         );
         client.sendMessage(message.from, response.text);
       } else {
-        logger.debug("No response to send.");
+        logger.debug("Nenhuma resposta para enviar.");
       }
     })
     .catch(error => {
-      logger.error("Error while handling message:", error);
+      logger.error("Erro ao tratar a mensagem:", error);
     });
 });
 
-//
-// Construct the Express Server
-// and set callback functions
 var app = express();
 app.use(express.json());
 
-// - Sets the app listening on the correct port.
 app.listen(3000, () => {
-  logger.info("Express server is listening on port 3000."); // Log the event.
+  logger.info("Express server está escutando na porta 3000.");
 });
 
-// - Listens to GET requests on the /health endpoint.
 app.get("/health", (req, res) => {
-  // Checks for the client state
+  // Verifica o estado do cliente
   client.getState().then(state => {
     console.log("GET /health:", state);
-    // If the client is logged in, send a 200 response.
+    // Se o cliente estiver logado, envie uma resposta 200.
     if (state === WAState.CONNECTED || state === WAState.PAIRING) {
-      res.status(200).send("OK");
+      res.status(200).send("Tudo Funcionando!");
     } else {
-      // Otherwise, send a 503 response.
-      res.status(503).send("Service Unavailable");
+      // Caso contrário, envie uma resposta 503.
+      res.status(503).send("Serviço não disponível");
     }
   });
 });
 
-// - Listens to POST requests on the /send endpoint.
 app.post("/send", async (req, res) => {
-  // Send the message to the WhatsApp client.
-  logger.debug("Received POST request on /send endpoint with body:", req.body);
-  logger.debug("Sending message to WhatsApp client:", req.body.text);
+  // Envie a mensagem para o cliente WhatsApp.
+  logger.debug("Solicitação POST recebida no endpoint /send com corpo:", req.body);
+  logger.debug("Enviando mensagem para cliente WhatsApp:", req.body.text);
 
+  // Buscar todos os usuarios de contato no Whatsapp
   const contacts = await client.getContacts()
+  // Filtra a procura do cliente pelo nome
   const contact = contacts.find(({ name }) => name === req.body.to)
+  // Serializa o ID para o envio da msg
   const { id: { _serialized: chatId } } = contact
   
   client.sendMessage(chatId, req.body.text);
-  res.send({ success: true });
+  res.send({ success: "Menssagem enviada!" });
 });

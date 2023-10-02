@@ -1,6 +1,6 @@
 """
-Message objects are a way of easing interaction with the messages
-sent from the WhatsApp client.
+Objetos de mensagem são uma forma de facilitar a interação com as mensagens
+enviado do cliente WhatsApp.
 """
 import json
 from typing import List
@@ -10,8 +10,8 @@ from handler_api.utils import get_key
 
 class Message: # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """
-    Message objects are a way of easing interaction with the messages
-    sent from the WhatsApp client.
+    Objetos de mensagem são uma forma de facilitar a interação com as mensagens
+    enviado do cliente WhatsApp.
 
     Attributes:
         - ack (int)
@@ -56,8 +56,8 @@ class Message: # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def __init__(self, message_dict: dict):
         """
-        Message objects are a way of easing interaction with the messages
-        sent from the WhatsApp client.
+        Objetos de mensagem são uma forma de facilitar a interação com as mensagens
+        enviado do cliente WhatsApp.
 
         Attributes:
             - ack (int)

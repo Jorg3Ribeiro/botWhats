@@ -1,26 +1,25 @@
 """
-This is where messages get handled. There must be a main function
-with the following signature:
+É aqui que as mensagens são tratadas. Deve haver uma função principal
+com a seguinte assinatura:
 
-    def handle(message: Message) -> str:
+    def handle(mensagem: Mensagem) -> str:
         ...
 
-This function needs to be able to manage state and return a text response.
+Esta função precisa ser capaz de gerenciar o estado e retornar uma resposta de texto.
 """
 
 from handler_api.message import Message
 
 def handle(message: Message) -> str: # pylint: disable=unused-argument
     """
-    Handles every kind of message and returns a response.
+    Lida com todo tipo de mensagem e retorna uma resposta.
 
-    Args:
-        message: The message to handle.
+    Argumentos:
+        mensagem: A mensagem a ser tratada.
 
-    Returns:
-        The response to send back to the user. If it returns
-        None, the message will be ignored.
+    Retorna:
+        A resposta a ser enviada de volta ao usuário. Se retornar
+        Nenhum, a mensagem será ignorada.
     """
-    if message.from_ == "somebody_you_know":
-        return "Hello, I'm a bot!"
-    return None
+   
+    return "Olá, sou um bot!"
