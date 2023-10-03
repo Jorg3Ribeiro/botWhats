@@ -141,7 +141,7 @@ class Message: # pylint: disable=too-many-instance-attributes,too-many-public-me
         self._vcards: List[str] = get_key(message_dict, "vCards", None)
 
     def __str__(self):
-        return f"Message from \"{self._from}\" to \"{self._to}\" with body \"{self._body}\""
+        return f"Mensagem de \"{self._from}\" para \"{self._to}\" com corpo \"{self._body}\""
 
     def __repr__(self):
         return self.__str__()
